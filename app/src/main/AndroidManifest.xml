@@ -16,7 +16,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activities.ViewRecordsActivity"></activity>
+        <activity android:name=".activities.ViewRecordsActivity"
+            android:label="Attendance List"></activity>
     </application>
 
 </manifest>
