@@ -3,13 +3,23 @@ package com.example.android.logger.models;
 public class Employee {
     private String employeeName;
     private String attendanceDate;
-    private String attendanceTime;
+    private String attendanceMonth;
+    private String getAttendanceYear;
+    private long attendanceTimeInMilliseconds;
 
-    public Employee(String employeeName, String attendanceDate, String attendanceTime) {
+
+    public Employee(){
+
+    }
+
+    public Employee(String employeeName, String attendanceDate, String attendanceMonth, String getAttendanceYear, long attendanceTimeInMilliseconds) {
         this.employeeName = employeeName;
         this.attendanceDate = attendanceDate;
-        this.attendanceTime = attendanceTime;
+        this.attendanceMonth = attendanceMonth;
+        this.getAttendanceYear = getAttendanceYear;
+        this.attendanceTimeInMilliseconds = attendanceTimeInMilliseconds;
     }
+
 
     public String getEmployeeName() {
         return employeeName;
@@ -27,11 +37,27 @@ public class Employee {
         this.attendanceDate = attendanceDate;
     }
 
-    public String getAttendanceTime() {
-        return attendanceTime;
+    public long getAttendanceTimeInMilliseconds() {
+        return attendanceTimeInMilliseconds;
     }
 
-    public void setAttendanceTime(String attendanceTime) {
-        this.attendanceTime = attendanceTime;
+    public void setAttendanceTimeInMilliseconds(long attendanceTimeInMilliseconds) {
+        this.attendanceTimeInMilliseconds = attendanceTimeInMilliseconds;
+    }
+
+    public String getAttendanceMonth() {
+        return attendanceMonth;
+    }
+
+    public void setAttendanceMonth(String attendanceMonth) {
+        this.attendanceMonth = attendanceMonth;
+    }
+
+    public String getGetAttendanceYear() {
+        return getAttendanceYear;
+    }
+
+    public void setGetAttendanceYear(String getAttendanceYear) {
+        this.getAttendanceYear = getAttendanceYear;
     }
 }
