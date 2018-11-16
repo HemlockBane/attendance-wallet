@@ -11,9 +11,15 @@ import android.widget.TextView;
 import com.example.android.logger.R;
 import com.example.android.logger.models.Employee;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
 public class ViewRecordsRecyclerAdapter extends RecyclerView.Adapter<ViewRecordsRecyclerAdapter.RecordsViewHolder> {
+
+    public String TIME_TEMPLATE = "HH:mm aa";
+    public String DAY_TEMPLATE = "EEE dd MMM";
 
     private final Context mContext;
     private final LayoutInflater mLayoutInflater;
@@ -39,9 +45,16 @@ public class ViewRecordsRecyclerAdapter extends RecyclerView.Adapter<ViewRecords
     public void onBindViewHolder(@NonNull RecordsViewHolder holder, int position) {
         Employee employee = mRecordsList.get(position);
 
+
+        long time = employee.getAttendanceTimeInMilliseconds();
+        Date dateObject = new Date(time);
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(dateObject);
+
         holder.nameTextView.setText(employee.getEmployeeName());
-        holder.dateTextView.setText(employee.getAttendanceDate());
-        holder.timeTextView.setText(employee.getAttendanceTime());
+        holder.dateTextView.setText(formatDate(dateObject));
+        holder.timeTextView.setText(formatTime(dateObject));
 
     }
 
@@ -62,10 +75,20 @@ public class ViewRecordsRecyclerAdapter extends RecyclerView.Adapter<ViewRecords
             dateTextView = itemView.findViewById(R.id.tv_attendance_date);
             timeTextView = itemView.findViewById(R.id.tv_attendance_time);
 
-
         }
+
+
     }
 
+    public String formatDate(Date date) {
+        SimpleDateFormat timeFormat = new SimpleDateFormat(TIME_TEMPLATE);
+        return timeFormat.format(date);
+    }
+
+    public String formatTime(Date date) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat(DAY_TEMPLATE);
+        return dateFormat.format(date);
+    }
 
 
 }

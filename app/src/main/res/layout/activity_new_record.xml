@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:app="http://schemas.android.com/apk/res-auto"
+xmlns:tools="http://schemas.android.com/tools"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+tools:context=".activities.NewRecordActivity">
+
+<TextView
+    android:id="@+id/tv_new_attendance_name"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_alignParentStart="true"
+    android:layout_alignParentTop="true"
+    android:layout_marginTop="120dp"
+    android:gravity="center"
+    android:textSize="22sp"
+    tools:text="Username" />
+
+    <TextView
+        android:id="@+id/tv_new_attendance_date"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="197dp"
+        android:gravity="center"
+        android:textSize="22sp"
+        tools:text="Date" />
+
+    <TextView
+        android:id="@+id/tv_new_attendance_time"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="300dp"
+        android:gravity="center"
+        android:textSize="22sp"
+        tools:text="Time" />
+
+</RelativeLayout>
