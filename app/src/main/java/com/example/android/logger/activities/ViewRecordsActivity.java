@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.android.logger.R;
@@ -19,18 +20,26 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
 public class ViewRecordsActivity extends AppCompatActivity {
     public ArrayList<Employee> recordsList;
+    ViewRecordsRecyclerAdapter viewRecordsRecyclerAdapter;
+
     private FloatingActionButton fabCreateAttendance;
+    private ProgressBar progressBarCreateAttendance;
 
     private FirebaseDatabase mFirebaseDatabase;
     private DatabaseReference mDatabaseReference;
     private ChildEventListener mChildEventListener;
+    private ChildEventListener queryChildEventListener;
+    private Query attendanceQuery;
 
-    ViewRecordsRecyclerAdapter viewRecordsRecyclerAdapter;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,12 +49,38 @@ public class ViewRecordsActivity extends AppCompatActivity {
         mFirebaseDatabase = FirebaseDatabase.getInstance();
         mDatabaseReference = mFirebaseDatabase.getReference("attendance");
 
+
+        progressBarCreateAttendance = findViewById(R.id.pb_create_attendance);
+
         fabCreateAttendance = findViewById(R.id.fab_create_attendance);
         fabCreateAttendance.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent createAttendanceIntent = new Intent(ViewRecordsActivity.this, NewRecordActivity.class);
-                startActivity(createAttendanceIntent);
+                long timeInMillisecs = System.currentTimeMillis();
+
+                Date dateObject = new Date(timeInMillisecs);
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(dateObject);
+
+                String day = Integer.toString(calendar.get(Calendar.DAY_OF_MONTH));
+                String month = Integer.toString(calendar.get(Calendar.MONTH + 1));
+                String year = Integer.toString(calendar.get(Calendar.YEAR));
+
+                int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+
+                int sunday = Calendar.SUNDAY;
+                int saturday = Calendar.SATURDAY;
+
+
+
+                if (dayOfWeek == sunday || dayOfWeek == saturday){
+                    Toast.makeText(ViewRecordsActivity.this, "It's weekend, you can register!", Toast.LENGTH_SHORT).show();
+
+                    Intent createAttendanceIntent = new Intent(ViewRecordsActivity.this, NewRecordActivity.class);
+                    startActivity(createAttendanceIntent);
+                }else{
+
+                }
             }
         });
 
@@ -57,7 +92,6 @@ public class ViewRecordsActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(linearLayoutManager);
 
         recordsList = new ArrayList<>();
-        //recordsList.add(new Employee("John Oke", "25", "May", "2018",System.currentTimeMillis()));
 
         viewRecordsRecyclerAdapter = new ViewRecordsRecyclerAdapter(this, recordsList);
         recyclerView.setAdapter(viewRecordsRecyclerAdapter);
@@ -68,11 +102,10 @@ public class ViewRecordsActivity extends AppCompatActivity {
                 if(dataSnapshot.exists()){
                     Employee employee = dataSnapshot.getValue(Employee.class);
                     recordsList.add(employee);
+
+                    progressBarCreateAttendance.setVisibility(View.GONE);
+
                     viewRecordsRecyclerAdapter.notifyDataSetChanged();
-
-                    Toast.makeText(ViewRecordsActivity.this, employee.getEmployeeName() , Toast.LENGTH_SHORT).show();
-
-
 
                 }
             }
