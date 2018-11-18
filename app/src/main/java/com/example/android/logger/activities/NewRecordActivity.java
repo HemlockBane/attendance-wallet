@@ -1,5 +1,6 @@
 package com.example.android.logger.activities;
 
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -66,7 +67,7 @@ public class NewRecordActivity extends AppCompatActivity {
         final String attendanceDate = Integer.toString(calendar.get(Calendar.DAY_OF_MONTH));
         final String attendanceMonth = Integer.toString(calendar.get(Calendar.MONTH) + 1); // Month is zero-indexed
         final String attendanceYear = Integer.toString(calendar.get(Calendar.YEAR));
-        final String dateString = "" + calendar.get(Calendar.YEAR) + "_" + calendar.get(Calendar.MONTH) + "_" + calendar.get(Calendar.DAY_OF_MONTH);
+        final String dateString = "" + calendar.get(Calendar.YEAR) + "/" + (calendar.get(Calendar.MONTH) + 1) + "/" + calendar.get(Calendar.DAY_OF_MONTH);
 
 
         SimpleDateFormat timeFormat = new SimpleDateFormat(TIME_TEMPLATE);
@@ -83,20 +84,39 @@ public class NewRecordActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Toast.makeText(NewRecordActivity.this, "You clicked post!", Toast.LENGTH_SHORT).show();
 
-                Toast.makeText(NewRecordActivity.this, "Year is " + attendanceYear, Toast.LENGTH_SHORT).show();
-                attendanceQuery = mDatabaseReference.orderByChild("employeeName").equalTo(attendanceYear);
+                attendanceQuery = mDatabaseReference.orderByChild("dateString").equalTo(dateString);
 
                 queryChildEventListener = new ChildEventListener() {
                     @Override
                     public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
                         if (dataSnapshot.exists()) {
-                            Toast.makeText(NewRecordActivity.this, "You can't register", Toast.LENGTH_SHORT).show();
-
-                            Employee employee = dataSnapshot.getValue(Employee.class);
-
-                            Toast.makeText(NewRecordActivity.this, "This is the date" + employee.getDateString(), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(NewRecordActivity.this, "You can't register again for today", Toast.LENGTH_SHORT).show();
+                            Intent viewRecordsIntent = new Intent(NewRecordActivity.this, ViewRecordsActivity.class);
+                            startActivity(viewRecordsIntent);
                         } else {
                             Toast.makeText(NewRecordActivity.this, "You can register", Toast.LENGTH_SHORT).show();
+                            Employee employee = new Employee("Karen Jane",
+                                    attendanceDate,
+                                    attendanceMonth,
+                                    attendanceYear,
+                                    dateString,
+                                    time);
+
+                            mDatabaseReference.push().setValue(employee)
+                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            Toast.makeText(NewRecordActivity.this, "Write successful!", Toast.LENGTH_SHORT).show();
+                                        }
+                                    })
+                                    .addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+
+                                            Toast.makeText(NewRecordActivity.this, "Write unsuccessful!", Toast.LENGTH_SHORT).show();
+
+                                        }
+                                    });
 
                         }
 
@@ -124,32 +144,12 @@ public class NewRecordActivity extends AppCompatActivity {
                 };
                 attendanceQuery.addChildEventListener(queryChildEventListener);
 
-//                Employee employee = new Employee("Karen Jane",
-//                        attendanceDate,
-//                        attendanceMonth,
-//                        attendanceYear,
-//                        dateString,
-//                        time);
-//
-//                mDatabaseReference.push().setValue(employee)
-//                        .addOnSuccessListener(new OnSuccessListener<Void>() {
-//                            @Override
-//                            public void onSuccess(Void aVoid) {
-//                                Toast.makeText(NewRecordActivity.this, "Write successful!", Toast.LENGTH_SHORT).show();
-//                            }
-//                        })
-//                        .addOnFailureListener(new OnFailureListener() {
-//                            @Override
-//                            public void onFailure(@NonNull Exception e) {
-//
-//                                Toast.makeText(NewRecordActivity.this, "Write unsuccessful!", Toast.LENGTH_SHORT).show();
-//
-//                            }
-//                        });
-
-
             }
         });
+
+    }
+
+    public void registerAttendance(){
 
     }
 }

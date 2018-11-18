@@ -4,7 +4,7 @@ public class Employee {
     private String employeeName;
     private String attendanceDate;
     private String attendanceMonth;
-    private String getAttendanceYear;
+    private String attendanceYear;
     private String dateString;
     private long attendanceTimeInMilliseconds;
 
@@ -13,11 +13,11 @@ public class Employee {
 
     }
 
-    public Employee(String employeeName, String attendanceDate, String attendanceMonth, String getAttendanceYear, String dateString, long attendanceTimeInMilliseconds) {
+    public Employee(String employeeName, String attendanceDate, String attendanceMonth, String attendanceYear, String dateString, long attendanceTimeInMilliseconds) {
         this.employeeName = employeeName;
         this.attendanceDate = attendanceDate;
         this.attendanceMonth = attendanceMonth;
-        this.getAttendanceYear = getAttendanceYear;
+        this.attendanceYear = attendanceYear;
         this.dateString = dateString;
         this.attendanceTimeInMilliseconds = attendanceTimeInMilliseconds;
     }
@@ -55,12 +55,12 @@ public class Employee {
         this.attendanceMonth = attendanceMonth;
     }
 
-    public String getGetAttendanceYear() {
-        return getAttendanceYear;
+    public String getAttendanceYear() {
+        return attendanceYear;
     }
 
-    public void setGetAttendanceYear(String getAttendanceYear) {
-        this.getAttendanceYear = getAttendanceYear;
+    public void setGetAttendanceYear(String attendanceYear) {
+        this.attendanceYear = attendanceYear;
     }
 
     public String getDateString() {

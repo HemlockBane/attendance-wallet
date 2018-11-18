@@ -42,7 +42,6 @@ public class ViewRecordsActivity extends AppCompatActivity {
     private Query attendanceQuery;
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,13 +73,12 @@ public class ViewRecordsActivity extends AppCompatActivity {
                 int saturday = Calendar.SATURDAY;
 
 
-
-                if (dayOfWeek == sunday || dayOfWeek == saturday){
+                if (dayOfWeek == sunday || dayOfWeek == saturday) {
                     Toast.makeText(ViewRecordsActivity.this, "It's weekend, you can register!", Toast.LENGTH_SHORT).show();
 
                     Intent createAttendanceIntent = new Intent(ViewRecordsActivity.this, NewRecordActivity.class);
                     startActivity(createAttendanceIntent);
-                }else{
+                } else {
 
                 }
             }
@@ -98,17 +96,67 @@ public class ViewRecordsActivity extends AppCompatActivity {
         viewRecordsRecyclerAdapter = new ViewRecordsRecyclerAdapter(this, recordsList);
         recyclerView.setAdapter(viewRecordsRecyclerAdapter);
 
+        recordsList.clear();
+        loadAllFirebaseEntries();
+
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_view_records, menu);
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        switch (id) {
+            case R.id.action_all_sort:
+                Toast.makeText(this, "All", Toast.LENGTH_SHORT).show();
+                recordsList.clear();
+
+                progressBarCreateAttendance.setVisibility(View.VISIBLE);
+
+                viewRecordsRecyclerAdapter.notifyDataSetChanged();
+
+                loadAllFirebaseEntries();
+
+
+                break;
+
+            case R.id.action_date_sort:
+                Toast.makeText(this, "Sort by date", Toast.LENGTH_SHORT).show();
+                recordsList.clear();
+
+                progressBarCreateAttendance.setVisibility(View.VISIBLE);
+
+                viewRecordsRecyclerAdapter.notifyDataSetChanged();
+
+                sortFirebaseEntries();
+                break;
+
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    /** Helper Methods**/
+
+    public void loadAllFirebaseEntries() {
+
         mChildEventListener = new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                if(dataSnapshot.exists()){
+                if (dataSnapshot.exists()) {
                     Employee employee = dataSnapshot.getValue(Employee.class);
+
                     recordsList.add(employee);
 
                     progressBarCreateAttendance.setVisibility(View.GONE);
 
                     viewRecordsRecyclerAdapter.notifyDataSetChanged();
-
                 }
             }
 
@@ -133,28 +181,56 @@ public class ViewRecordsActivity extends AppCompatActivity {
             }
         };
         mDatabaseReference.addChildEventListener(mChildEventListener);
-
-
-
-
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_view_records, menu);
+    public void sortFirebaseEntries() {
+        progressBarCreateAttendance.setVisibility(View.VISIBLE);
+        attendanceQuery = mDatabaseReference.orderByChild("employeeName").equalTo("Karen Jane");
 
-        return true;
+        queryChildEventListener = new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                if (dataSnapshot.exists()) {
+                    Toast.makeText(ViewRecordsActivity.this, "Data exists", Toast.LENGTH_SHORT).show();
+
+                    progressBarCreateAttendance.setVisibility(View.GONE);
+
+                    Employee employee = dataSnapshot.getValue(Employee.class);
+
+                    recordsList.add(employee);
+
+                    progressBarCreateAttendance.setVisibility(View.GONE);
+
+                    viewRecordsRecyclerAdapter.notifyDataSetChanged();
+                } else {
+                    Toast.makeText(ViewRecordsActivity.this, "No data found", Toast.LENGTH_SHORT).show();
+                }
+
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        };
+
+        attendanceQuery.addChildEventListener(queryChildEventListener);
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
 
-        switch (id){
-            case R.id.action_all_sort:
-
-            case R.id.action_date_sort:
-        }
-        return super.onOptionsItemSelected(item);
-    }
 }
