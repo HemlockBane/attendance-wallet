@@ -47,6 +47,14 @@ public class NewRecordActivity extends AppCompatActivity {
     public String TIME_TEMPLATE = "HH:mm aa";
     public String DAY_TEMPLATE = "EEE dd MMM";
 
+
+    String attendanceDate;
+    String attendanceMonth;
+    String attendanceYear;
+    String dateString;
+    long time;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,16 +68,16 @@ public class NewRecordActivity extends AppCompatActivity {
         attendanceTimeText = findViewById(R.id.tv_new_attendance_time);
         fabPostAttenance = findViewById(R.id.fab_post_new_attendance);
 
-        final long time = System.currentTimeMillis();
+        time = System.currentTimeMillis();
         Date dateObject = new Date(time);
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(dateObject);
 
-        final String attendanceDate = Integer.toString(calendar.get(Calendar.DAY_OF_MONTH));
-        final String attendanceMonth = Integer.toString(calendar.get(Calendar.MONTH) + 1); // Month is zero-indexed
-        final String attendanceYear = Integer.toString(calendar.get(Calendar.YEAR));
-        final String dateString = "" + calendar.get(Calendar.YEAR) + "/" + (calendar.get(Calendar.MONTH) + 1) + "/" + calendar.get(Calendar.DAY_OF_MONTH);
+        attendanceDate = Integer.toString(calendar.get(Calendar.DAY_OF_MONTH));
+        attendanceMonth = Integer.toString(calendar.get(Calendar.MONTH) + 1); // Month is zero-indexed
+        attendanceYear = Integer.toString(calendar.get(Calendar.YEAR));
+        dateString = "" + calendar.get(Calendar.YEAR) + "/" + (calendar.get(Calendar.MONTH) + 1) + "/" + calendar.get(Calendar.DAY_OF_MONTH);
 
 
         SimpleDateFormat timeFormat = new SimpleDateFormat(TIME_TEMPLATE);
@@ -86,75 +94,57 @@ public class NewRecordActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Toast.makeText(NewRecordActivity.this, dateString, Toast.LENGTH_SHORT).show();
 
-                attendanceQuery = mDatabaseReference.orderByChild("employeeName").equalTo("Karen Jane");
+                attendanceQuery = mDatabaseReference.orderByChild("dateString").equalTo(dateString);
 
-                queryChildEventListener = new ChildEventListener() {
-                    @Override
-                    public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                        if (dataSnapshot.exists()) {
-                            Toast.makeText(NewRecordActivity.this, "You can't register again for today", Toast.LENGTH_SHORT).show();
-                            Intent viewRecordsIntent = new Intent(NewRecordActivity.this, ViewRecordsActivity.class);
-                            startActivity(viewRecordsIntent);
-                        } else if (!dataSnapshot.exists()) {
-                            Toast.makeText(NewRecordActivity.this, "You can register", Toast.LENGTH_SHORT).show();
-                            Employee employee = new Employee("Kay Jane",
+                registerAttendance();
+            }
+        });
+    }
+
+    public void registerAttendance(){
+        final Intent viewRecordsIntent = new Intent(NewRecordActivity.this, ViewRecordsActivity.class);
+
+        attendanceQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()){
+                    Toast.makeText(NewRecordActivity.this, "You can't register. Wait till tomorrow", Toast.LENGTH_SHORT).show();
+                    startActivity(viewRecordsIntent);
+
+                }else{
+                    Employee employee = new Employee("Kay Jane",
                                     attendanceDate,
                                     attendanceMonth,
                                     attendanceYear,
                                     dateString,
                                     time);
 
-                            mDatabaseReference.push().setValue(employee)
+                    mDatabaseReference.push().setValue(employee)
                                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                                         @Override
                                         public void onSuccess(Void aVoid) {
-                                            Toast.makeText(NewRecordActivity.this, "Write successful!", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(NewRecordActivity.this, "Write successful!", Toast.LENGTH_SHORT)
+                                                    .show();
+                                            startActivity(viewRecordsIntent);
                                         }
                                     })
                                     .addOnFailureListener(new OnFailureListener() {
                                         @Override
                                         public void onFailure(@NonNull Exception e) {
 
-                                            Toast.makeText(NewRecordActivity.this, "Write unsuccessful!", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(NewRecordActivity.this, "Write unsuccessful!", Toast.LENGTH_SHORT)
+                                                    .show();
+                                            startActivity(viewRecordsIntent);
 
                                         }
                                     });
+                }
+            }
 
-                        }
-
-                    }
-
-                    @Override
-                    public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-                    }
-
-                    @Override
-                    public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-
-                    }
-
-                    @Override
-                    public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                    }
-                };
-                attendanceQuery.addChildEventListener(queryChildEventListener);
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
 
             }
         });
-
-
-
-
-    }
-
-    public void registerAttendance(){
-
     }
 }

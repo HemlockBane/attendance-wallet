@@ -18,6 +18,7 @@ public class PopScreen extends AppCompatDialogFragment {
     TextView monthText;
     TextView yearText;
     private  PopScreenListener popScreenListener;
+
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
@@ -51,6 +52,7 @@ public class PopScreen extends AppCompatDialogFragment {
         return builder.create();
     }
 
+    // When pop up screen is attached to the activity
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);

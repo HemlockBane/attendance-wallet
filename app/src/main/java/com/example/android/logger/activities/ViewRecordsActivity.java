@@ -218,7 +218,7 @@ public class ViewRecordsActivity extends AppCompatActivity implements PopScreen.
                 // If user is signed in
                 if (user != null) {
                     //Display toast
-                    Toast.makeText(ViewRecordsActivity.this, "Welcome, " + user.getDisplayName() + "!", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(ViewRecordsActivity.this, "Welcome, " + user.getDisplayName() + "!", Toast.LENGTH_SHORT).show();
                 } else {
                     // Start login flow
                     startActivityForResult(
