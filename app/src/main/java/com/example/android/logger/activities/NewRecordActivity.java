@@ -84,10 +84,9 @@ public class NewRecordActivity extends AppCompatActivity {
         fabPostAttenance.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(NewRecordActivity.this, "You clicked post!", Toast.LENGTH_SHORT).show();
                 Toast.makeText(NewRecordActivity.this, dateString, Toast.LENGTH_SHORT).show();
 
-                attendanceQuery = mDatabaseReference.orderByChild("dateString").equalTo(dateString);
+                attendanceQuery = mDatabaseReference.orderByChild("employeeName").equalTo("Karen Jane");
 
                 queryChildEventListener = new ChildEventListener() {
                     @Override
@@ -96,9 +95,9 @@ public class NewRecordActivity extends AppCompatActivity {
                             Toast.makeText(NewRecordActivity.this, "You can't register again for today", Toast.LENGTH_SHORT).show();
                             Intent viewRecordsIntent = new Intent(NewRecordActivity.this, ViewRecordsActivity.class);
                             startActivity(viewRecordsIntent);
-                        } else {
+                        } else if (!dataSnapshot.exists()) {
                             Toast.makeText(NewRecordActivity.this, "You can register", Toast.LENGTH_SHORT).show();
-                            Employee employee = new Employee("Karen Jane",
+                            Employee employee = new Employee("Kay Jane",
                                     attendanceDate,
                                     attendanceMonth,
                                     attendanceYear,

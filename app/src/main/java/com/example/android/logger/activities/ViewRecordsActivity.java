@@ -19,6 +19,9 @@ import android.widget.Toast;
 import com.example.android.logger.R;
 import com.example.android.logger.adapters.ViewRecordsRecyclerAdapter;
 import com.example.android.logger.models.Employee;
+import com.firebase.ui.auth.AuthUI;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -27,10 +30,14 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 
 public class ViewRecordsActivity extends AppCompatActivity implements PopScreen.PopScreenListener {
+
+    public static final int RC_SIGN_IN = 1;
+
     public ArrayList<Employee> recordsList;
     ViewRecordsRecyclerAdapter viewRecordsRecyclerAdapter;
 
@@ -39,8 +46,13 @@ public class ViewRecordsActivity extends AppCompatActivity implements PopScreen.
 
     private FirebaseDatabase mFirebaseDatabase;
     private DatabaseReference mDatabaseReference;
+
     private ChildEventListener mChildEventListener;
     private ChildEventListener queryChildEventListener;
+
+    private FirebaseAuth mFirebaseAuth;
+    private FirebaseAuth.AuthStateListener mAuthStateListener;
+
     private Query attendanceQuery;
 
     private String dateString;
@@ -53,6 +65,9 @@ public class ViewRecordsActivity extends AppCompatActivity implements PopScreen.
 
         mFirebaseDatabase = FirebaseDatabase.getInstance();
         mDatabaseReference = mFirebaseDatabase.getReference("attendance");
+        mFirebaseAuth = FirebaseAuth.getInstance();
+
+        checkLoginStatus();
 
 
         progressBarCreateAttendance = findViewById(R.id.pb_create_attendance);
@@ -108,7 +123,38 @@ public class ViewRecordsActivity extends AppCompatActivity implements PopScreen.
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == RC_SIGN_IN) {
+            if (resultCode == RESULT_OK) {
+                Toast.makeText(this, "Signed In!", Toast.LENGTH_SHORT).show();
+
+            } else if (resultCode == RESULT_CANCELED) {
+                Toast.makeText(this, "Sign in cancelled!", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    //When user interacts the UI
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Listen for sign in status
+        mFirebaseAuth.addAuthStateListener(mAuthStateListener);
+    }
+
+    // When user stops interacting with the UI
+    @Override
+    protected void onPause() {
+        super.onPause();
+        //
+        mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
+    }
+
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu resource
         getMenuInflater().inflate(R.menu.menu_view_records, menu);
 
         return true;
@@ -118,20 +164,25 @@ public class ViewRecordsActivity extends AppCompatActivity implements PopScreen.
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
+        // Determine which menu item is clicked
         switch (id) {
+            // All is clicked
             case R.id.action_all_sort:
                 Toast.makeText(this, "All", Toast.LENGTH_SHORT).show();
+                // Clear the ArrayList
                 recordsList.clear();
 
+                // Display the loading indicator
                 progressBarCreateAttendance.setVisibility(View.VISIBLE);
 
+                // Update the RecyclerAdapter
                 viewRecordsRecyclerAdapter.notifyDataSetChanged();
 
+                // Update the UI
                 loadAllFirebaseEntries();
+                return true;
 
-
-                break;
-
+            // Sort by date is clicked
             case R.id.action_date_sort:
                 recordsList.clear();
 
@@ -140,24 +191,53 @@ public class ViewRecordsActivity extends AppCompatActivity implements PopScreen.
                 viewRecordsRecyclerAdapter.notifyDataSetChanged();
 
                 openPopUp();
+                return true;
 
-                break;
+            case R.id.action_sign_out:
+                AuthUI.getInstance().signOut(this);
+                return true;
 
+            default:
+                return super.onOptionsItemSelected(item);
         }
-        return super.onOptionsItemSelected(item);
     }
 
-    /** Helper Methods**/
+    // Helper Methods
 
-    public void openPopUp(){
+    public void checkLoginStatus() {
+        mAuthStateListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                // If user is signed in
+                if (user != null) {
+                    //Display toast
+                    Toast.makeText(ViewRecordsActivity.this, "Welcome, " + user.getDisplayName() + "!", Toast.LENGTH_SHORT).show();
+                } else {
+                    // Start login flow
+                    startActivityForResult(
+                            AuthUI.getInstance()
+                                    .createSignInIntentBuilder()
+                                    .setIsSmartLockEnabled(false)
+                                    .setAvailableProviders(Arrays.asList(
+                                            new AuthUI.IdpConfig.EmailBuilder().build()))
+                                    .build(),
+                            RC_SIGN_IN);
+                }
+            }
+        };
+    }
+
+    //Start the pop up screen
+    public void openPopUp() {
         PopScreen popScreen = new PopScreen();
         popScreen.show(getSupportFragmentManager(), "Test Dialog");
 
 
-
-
     }
 
+    // Get details from the pop up screen
     @Override
     public void applyText(String date, String month, String year) {
         dateString = year + "/" + month + "/" + date;
@@ -167,6 +247,7 @@ public class ViewRecordsActivity extends AppCompatActivity implements PopScreen.
         sortFirebaseEntries(dateString);
     }
 
+    // Load all attendance entries
     public void loadAllFirebaseEntries() {
 
         mChildEventListener = new ChildEventListener() {
