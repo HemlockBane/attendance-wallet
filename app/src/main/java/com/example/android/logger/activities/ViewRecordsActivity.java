@@ -4,10 +4,12 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -28,7 +30,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
-public class ViewRecordsActivity extends AppCompatActivity {
+public class ViewRecordsActivity extends AppCompatActivity implements PopScreen.PopScreenListener {
     public ArrayList<Employee> recordsList;
     ViewRecordsRecyclerAdapter viewRecordsRecyclerAdapter;
 
@@ -40,6 +42,8 @@ public class ViewRecordsActivity extends AppCompatActivity {
     private ChildEventListener mChildEventListener;
     private ChildEventListener queryChildEventListener;
     private Query attendanceQuery;
+
+    private String dateString;
 
 
     @Override
@@ -59,6 +63,8 @@ public class ViewRecordsActivity extends AppCompatActivity {
             public void onClick(View view) {
                 long timeInMillisecs = System.currentTimeMillis();
 
+                dateString = "";
+
                 Date dateObject = new Date(timeInMillisecs);
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTime(dateObject);
@@ -74,12 +80,11 @@ public class ViewRecordsActivity extends AppCompatActivity {
 
 
                 if (dayOfWeek == sunday || dayOfWeek == saturday) {
-                    Toast.makeText(ViewRecordsActivity.this, "It's weekend, you can register!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ViewRecordsActivity.this, "It's weekend, you can't register!", Toast.LENGTH_SHORT).show();
 
+                } else {
                     Intent createAttendanceIntent = new Intent(ViewRecordsActivity.this, NewRecordActivity.class);
                     startActivity(createAttendanceIntent);
-                } else {
-
                 }
             }
         });
@@ -128,14 +133,14 @@ public class ViewRecordsActivity extends AppCompatActivity {
                 break;
 
             case R.id.action_date_sort:
-                Toast.makeText(this, "Sort by date", Toast.LENGTH_SHORT).show();
                 recordsList.clear();
 
                 progressBarCreateAttendance.setVisibility(View.VISIBLE);
 
                 viewRecordsRecyclerAdapter.notifyDataSetChanged();
 
-                sortFirebaseEntries();
+                openPopUp();
+
                 break;
 
         }
@@ -143,6 +148,24 @@ public class ViewRecordsActivity extends AppCompatActivity {
     }
 
     /** Helper Methods**/
+
+    public void openPopUp(){
+        PopScreen popScreen = new PopScreen();
+        popScreen.show(getSupportFragmentManager(), "Test Dialog");
+
+
+
+
+    }
+
+    @Override
+    public void applyText(String date, String month, String year) {
+        dateString = year + "/" + month + "/" + date;
+
+        Toast.makeText(this, dateString, Toast.LENGTH_SHORT).show();
+
+        sortFirebaseEntries(dateString);
+    }
 
     public void loadAllFirebaseEntries() {
 
@@ -183,9 +206,10 @@ public class ViewRecordsActivity extends AppCompatActivity {
         mDatabaseReference.addChildEventListener(mChildEventListener);
     }
 
-    public void sortFirebaseEntries() {
+    public void sortFirebaseEntries(String equalToQuery) {
         progressBarCreateAttendance.setVisibility(View.VISIBLE);
-        attendanceQuery = mDatabaseReference.orderByChild("employeeName").equalTo("Karen Jane");
+        //Toast.makeText(this, dateString, Toast.LENGTH_SHORT).show();
+        attendanceQuery = mDatabaseReference.orderByChild("dateString").equalTo(equalToQuery);
 
         queryChildEventListener = new ChildEventListener() {
             @Override

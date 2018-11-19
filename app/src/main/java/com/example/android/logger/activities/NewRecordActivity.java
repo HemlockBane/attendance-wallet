@@ -21,6 +21,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 
 import java.text.Format;
 import java.text.SimpleDateFormat;
@@ -34,6 +35,7 @@ public class NewRecordActivity extends AppCompatActivity {
     private DatabaseReference mSubDatabaseReference;
     private Query attendanceQuery;
     private ChildEventListener queryChildEventListener;
+    private ValueEventListener queryValueEventListener;
 
 
     private TextView attendanceNameText;
@@ -83,6 +85,7 @@ public class NewRecordActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Toast.makeText(NewRecordActivity.this, "You clicked post!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(NewRecordActivity.this, dateString, Toast.LENGTH_SHORT).show();
 
                 attendanceQuery = mDatabaseReference.orderByChild("dateString").equalTo(dateString);
 
@@ -146,6 +149,9 @@ public class NewRecordActivity extends AppCompatActivity {
 
             }
         });
+
+
+
 
     }
 

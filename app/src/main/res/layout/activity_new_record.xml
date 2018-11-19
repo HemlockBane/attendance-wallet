@@ -14,7 +14,8 @@ tools:context=".activities.NewRecordActivity">
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:layout_marginEnd="17dp"
-        android:layout_marginBottom="21dp" />
+        android:layout_marginBottom="21dp"
+        android:src="@drawable/ic_send_white_24dp"/>
 
 <TextView
     android:id="@+id/tv_new_attendance_name"
