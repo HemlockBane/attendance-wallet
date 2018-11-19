@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -28,6 +29,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,6 +39,7 @@ import java.util.Date;
 public class ViewRecordsActivity extends AppCompatActivity implements PopScreen.PopScreenListener {
 
     public static final int RC_SIGN_IN = 1;
+    private static final String LOG_TAG = ViewRecordsActivity.class.getSimpleName();
 
     public ArrayList<Employee> recordsList;
     ViewRecordsRecyclerAdapter viewRecordsRecyclerAdapter;
@@ -49,6 +52,8 @@ public class ViewRecordsActivity extends AppCompatActivity implements PopScreen.
 
     private ChildEventListener mChildEventListener;
     private ChildEventListener queryChildEventListener;
+
+    private ValueEventListener queryValueListener;
 
     private FirebaseAuth mFirebaseAuth;
     private FirebaseAuth.AuthStateListener mAuthStateListener;
@@ -292,13 +297,14 @@ public class ViewRecordsActivity extends AppCompatActivity implements PopScreen.
         //Toast.makeText(this, dateString, Toast.LENGTH_SHORT).show();
         attendanceQuery = mDatabaseReference.orderByChild("dateString").equalTo(equalToQuery);
 
-        queryChildEventListener = new ChildEventListener() {
+        attendanceQuery.addValueEventListener(new ValueEventListener() {
             @Override
-            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                if (dataSnapshot.exists()) {
-                    Toast.makeText(ViewRecordsActivity.this, "Data exists", Toast.LENGTH_SHORT).show();
-
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()){
+                    Toast.makeText(ViewRecordsActivity.this, "Exists", Toast.LENGTH_SHORT).show();
                     progressBarCreateAttendance.setVisibility(View.GONE);
+
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()){
 
                     Employee employee = dataSnapshot.getValue(Employee.class);
 
@@ -307,34 +313,20 @@ public class ViewRecordsActivity extends AppCompatActivity implements PopScreen.
                     progressBarCreateAttendance.setVisibility(View.GONE);
 
                     viewRecordsRecyclerAdapter.notifyDataSetChanged();
-                } else {
+                    }
+
+                }else{
+                    Toast.makeText(ViewRecordsActivity.this, "Doesn't exist", Toast.LENGTH_SHORT).show();
+                    progressBarCreateAttendance.setVisibility(View.GONE);
                     Toast.makeText(ViewRecordsActivity.this, "No data found", Toast.LENGTH_SHORT).show();
                 }
 
             }
-
-            @Override
-            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-            }
-
-            @Override
-            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-            }
-
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
 
             }
-        };
-
-        attendanceQuery.addChildEventListener(queryChildEventListener);
+        });
     }
 
 
