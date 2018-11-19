@@ -44,6 +44,8 @@ public class ViewRecordsActivity extends AppCompatActivity implements PopScreen.
     public ArrayList<Employee> recordsList;
     ViewRecordsRecyclerAdapter viewRecordsRecyclerAdapter;
 
+    public static String USER_NAME;
+
     private FloatingActionButton fabCreateAttendance;
     private ProgressBar progressBarCreateAttendance;
 
@@ -219,6 +221,7 @@ public class ViewRecordsActivity extends AppCompatActivity implements PopScreen.
                 if (user != null) {
                     //Display toast
                     //Toast.makeText(ViewRecordsActivity.this, "Welcome, " + user.getDisplayName() + "!", Toast.LENGTH_SHORT).show();
+                    USER_NAME = user.getDisplayName();
                 } else {
                     // Start login flow
                     startActivityForResult(

@@ -84,7 +84,7 @@ public class NewRecordActivity extends AppCompatActivity {
         SimpleDateFormat dateFormat = new SimpleDateFormat(DAY_TEMPLATE);
 
 
-        attendanceNameText.setText(dateString);
+        attendanceNameText.setText(ViewRecordsActivity.USER_NAME);
         attendanceDateText.setText(dateFormat.format(dateObject));
         attendanceTimeText.setText(timeFormat.format(dateObject));
 
@@ -112,7 +112,7 @@ public class NewRecordActivity extends AppCompatActivity {
                     startActivity(viewRecordsIntent);
 
                 }else{
-                    Employee employee = new Employee("Kay Jane",
+                    Employee employee = new Employee(ViewRecordsActivity.USER_NAME,
                                     attendanceDate,
                                     attendanceMonth,
                                     attendanceYear,
