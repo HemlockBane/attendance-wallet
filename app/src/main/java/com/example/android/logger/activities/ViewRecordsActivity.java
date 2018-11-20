@@ -309,7 +309,7 @@ public class ViewRecordsActivity extends AppCompatActivity implements PopScreen.
 
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()){
 
-                    Employee employee = dataSnapshot.getValue(Employee.class);
+                    Employee employee = snapshot.getValue(Employee.class);
 
                     recordsList.add(employee);
 
