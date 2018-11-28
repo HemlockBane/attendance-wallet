@@ -4,13 +4,10 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,6 +17,7 @@ import android.widget.Toast;
 import com.example.android.logger.R;
 import com.example.android.logger.adapters.ViewRecordsRecyclerAdapter;
 import com.example.android.logger.models.Employee;
+import com.example.android.logger.utils.PopScreen;
 import com.firebase.ui.auth.AuthUI;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -40,11 +38,9 @@ public class ViewRecordsActivity extends AppCompatActivity implements PopScreen.
 
     public static final int RC_SIGN_IN = 1;
     private static final String LOG_TAG = ViewRecordsActivity.class.getSimpleName();
-
+    public static String USER_NAME;
     public ArrayList<Employee> recordsList;
     ViewRecordsRecyclerAdapter viewRecordsRecyclerAdapter;
-
-    public static String USER_NAME;
 
     private FloatingActionButton fabCreateAttendance;
     private ProgressBar progressBarCreateAttendance;
@@ -83,18 +79,25 @@ public class ViewRecordsActivity extends AppCompatActivity implements PopScreen.
         fabCreateAttendance.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Get the current time in milliseconds
                 long timeInMillisecs = System.currentTimeMillis();
 
                 dateString = "";
 
+                // Create a date object using the current time in milliseconds
                 Date dateObject = new Date(timeInMillisecs);
+                // Get an instance of the Calendar class
                 Calendar calendar = Calendar.getInstance();
+                // Set the calendar using the date object
                 calendar.setTime(dateObject);
 
+                // Get the day, month and year from the calendar and parse them as strings
+
                 String day = Integer.toString(calendar.get(Calendar.DAY_OF_MONTH));
-                String month = Integer.toString(calendar.get(Calendar.MONTH + 1));
+                String month = Integer.toString(calendar.get(Calendar.MONTH + 1)); // month is zero-indexed
                 String year = Integer.toString(calendar.get(Calendar.YEAR));
 
+                // Get the day of week from the calendar
                 int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
 
                 int sunday = Calendar.SUNDAY;
@@ -102,7 +105,7 @@ public class ViewRecordsActivity extends AppCompatActivity implements PopScreen.
 
 
                 if (dayOfWeek == sunday || dayOfWeek == saturday) {
-                    Toast.makeText(ViewRecordsActivity.this, "It's weekend, you can't register!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ViewRecordsActivity.this, "It's a weekend, you can't register!", Toast.LENGTH_SHORT).show();
 
                 } else {
                     Intent createAttendanceIntent = new Intent(ViewRecordsActivity.this, NewRecordActivity.class);
@@ -193,14 +196,18 @@ public class ViewRecordsActivity extends AppCompatActivity implements PopScreen.
             case R.id.action_date_sort:
                 recordsList.clear();
 
+                // Show the loading indicator
                 progressBarCreateAttendance.setVisibility(View.VISIBLE);
 
+                // Update the adapter with the new data
                 viewRecordsRecyclerAdapter.notifyDataSetChanged();
 
+                // Show pop up screen
                 openPopUp();
                 return true;
 
             case R.id.action_sign_out:
+                // Sign out
                 AuthUI.getInstance().signOut(this);
                 return true;
 
@@ -219,8 +226,6 @@ public class ViewRecordsActivity extends AppCompatActivity implements PopScreen.
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 // If user is signed in
                 if (user != null) {
-                    //Display toast
-                    //Toast.makeText(ViewRecordsActivity.this, "Welcome, " + user.getDisplayName() + "!", Toast.LENGTH_SHORT).show();
                     USER_NAME = user.getDisplayName();
                 } else {
                     // Start login flow
@@ -303,28 +308,31 @@ public class ViewRecordsActivity extends AppCompatActivity implements PopScreen.
         attendanceQuery.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()){
+                if (dataSnapshot.exists()) {
                     Toast.makeText(ViewRecordsActivity.this, "Exists", Toast.LENGTH_SHORT).show();
                     progressBarCreateAttendance.setVisibility(View.GONE);
 
-                    for (DataSnapshot snapshot : dataSnapshot.getChildren()){
+                    Toast.makeText(ViewRecordsActivity.this, "Children count is " + dataSnapshot.getChildrenCount(), Toast.LENGTH_SHORT).show();
 
-                    Employee employee = snapshot.getValue(Employee.class);
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
 
-                    recordsList.add(employee);
+                        Employee employee = snapshot.getValue(Employee.class);
 
-                    progressBarCreateAttendance.setVisibility(View.GONE);
+                        recordsList.add(employee);
 
-                    viewRecordsRecyclerAdapter.notifyDataSetChanged();
+                        progressBarCreateAttendance.setVisibility(View.GONE);
+
+                        viewRecordsRecyclerAdapter.notifyDataSetChanged();
                     }
 
-                }else{
+                } else {
                     Toast.makeText(ViewRecordsActivity.this, "Doesn't exist", Toast.LENGTH_SHORT).show();
                     progressBarCreateAttendance.setVisibility(View.GONE);
                     Toast.makeText(ViewRecordsActivity.this, "No data found", Toast.LENGTH_SHORT).show();
                 }
 
             }
+
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
 

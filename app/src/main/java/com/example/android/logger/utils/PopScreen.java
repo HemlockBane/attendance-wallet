@@ -1,4 +1,4 @@
-package com.example.android.logger.activities;
+package com.example.android.logger.utils;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -65,6 +65,7 @@ public class PopScreen extends AppCompatDialogFragment {
     }
 
     public interface PopScreenListener{
+        // Get the text from the pop up screen
         void applyText(String date, String month, String year);
     }
 }

@@ -25,6 +25,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.text.Format;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -47,6 +48,8 @@ public class NewRecordActivity extends AppCompatActivity {
     public String TIME_TEMPLATE = "HH:mm aa";
     public String DAY_TEMPLATE = "EEE dd MMM";
 
+    private Intent viewRecordsIntent;
+
 
     String attendanceDate;
     String attendanceMonth;
@@ -67,6 +70,8 @@ public class NewRecordActivity extends AppCompatActivity {
         attendanceDateText = findViewById(R.id.tv_new_attendance_date);
         attendanceTimeText = findViewById(R.id.tv_new_attendance_time);
         fabPostAttenance = findViewById(R.id.fab_post_new_attendance);
+
+        viewRecordsIntent = new Intent(NewRecordActivity.this, ViewRecordsActivity.class);
 
         time = System.currentTimeMillis();
         Date dateObject = new Date(time);
@@ -101,43 +106,58 @@ public class NewRecordActivity extends AppCompatActivity {
         });
     }
 
-    public void registerAttendance(){
-        final Intent viewRecordsIntent = new Intent(NewRecordActivity.this, ViewRecordsActivity.class);
+    public void registerAttendance() {
 
         attendanceQuery.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()){
-                    Toast.makeText(NewRecordActivity.this, "You can't register. Wait till tomorrow", Toast.LENGTH_SHORT).show();
-                    startActivity(viewRecordsIntent);
+                // If people have already registered for the day
+                if (dataSnapshot.exists()) {
+                    //Toast.makeText(NewRecordActivity.this, "Data", Toast.LENGTH_SHORT).show();
 
-                }else{
-                    Employee employee = new Employee(ViewRecordsActivity.USER_NAME,
-                                    attendanceDate,
-                                    attendanceMonth,
-                                    attendanceYear,
-                                    dateString,
-                                    time);
+                    ArrayList<Employee> employeeQueryList = new ArrayList<>();
+                    // Make a copy of the attendance register
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
 
-                    mDatabaseReference.push().setValue(employee)
-                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                        @Override
-                                        public void onSuccess(Void aVoid) {
-                                            Toast.makeText(NewRecordActivity.this, "Write successful!", Toast.LENGTH_SHORT)
-                                                    .show();
-                                            startActivity(viewRecordsIntent);
-                                        }
-                                    })
-                                    .addOnFailureListener(new OnFailureListener() {
-                                        @Override
-                                        public void onFailure(@NonNull Exception e) {
+                        Employee testEmployee = snapshot.getValue(Employee.class);
+                        employeeQueryList.add(testEmployee);
 
-                                            Toast.makeText(NewRecordActivity.this, "Write unsuccessful!", Toast.LENGTH_SHORT)
-                                                    .show();
-                                            startActivity(viewRecordsIntent);
+                    }
 
-                                        }
-                                    });
+                    boolean disqualified = true;
+
+                    // Check all the names in the register and see if the
+                    // user has registered for the day
+                    for (Employee employee : employeeQueryList) {
+                        //Toast.makeText(NewRecordActivity.this, "Data Loop: " + employee.getEmployeeName(), Toast.LENGTH_SHORT).show();
+
+                        // If user has registered for the day,
+                        if ((employee.getEmployeeName()).equals(ViewRecordsActivity.USER_NAME)) {
+                            // User is disqualified
+                            disqualified = true;
+                            break;
+                        } else {
+                            // User is qualified
+                            disqualified = false;
+                        }
+                    }
+
+                    // If the user hasn't registered for the day
+                    if (!disqualified) {
+                        // Register
+                        sendDataToServer();
+                    } else {
+                        // Don't register
+                        Toast.makeText(NewRecordActivity.this, "You can't register again for today. Wait till tomorrow", Toast.LENGTH_SHORT).show();
+                        startActivity(viewRecordsIntent);
+                    }
+
+                } else {
+                    // If no one has registered for the day
+                    Toast.makeText(NewRecordActivity.this, "Well done, early bird!", Toast.LENGTH_SHORT).show();
+                    // Register
+                    sendDataToServer();
+
                 }
             }
 
@@ -146,5 +166,34 @@ public class NewRecordActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    public void sendDataToServer() {
+        Employee newEmployee = new Employee(ViewRecordsActivity.USER_NAME,
+                attendanceDate,
+                attendanceMonth,
+                attendanceYear,
+                dateString,
+                time);
+
+        mDatabaseReference.push().setValue(newEmployee)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Toast.makeText(NewRecordActivity.this, "Write successful!", Toast.LENGTH_SHORT)
+                                .show();
+                        startActivity(viewRecordsIntent);
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+
+                        Toast.makeText(NewRecordActivity.this, "Write unsuccessful!", Toast.LENGTH_SHORT)
+                                .show();
+                        startActivity(viewRecordsIntent);
+
+                    }
+                });
     }
 }

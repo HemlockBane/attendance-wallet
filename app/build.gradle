@@ -2,6 +2,14 @@ apply plugin: 'com.android.application'
 
 
 android {
+    signingConfigs {
+        config {
+            keyAlias 'logger'
+            keyPassword 'password'
+            storeFile file('C:/Users/Polymath/Desktop/keystores/new_logger.jks')
+            storePassword 'password'
+        }
+    }
     compileSdkVersion 27
     defaultConfig {
         applicationId "com.example.android.logger"

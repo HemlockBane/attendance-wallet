@@ -20,7 +20,7 @@
         <activity
             android:name=".activities.NewRecordActivity"
             android:label="Create Attendance"></activity>
-        <activity android:name=".activities.PopUpDialog"
+        <activity android:name=".utils.PopUpDialog"
             android:parentActivityName=".activities.ViewRecordsActivity"></activity>
     </application>
 
