@@ -194,6 +194,8 @@ public class ViewRecordsActivity extends AppCompatActivity implements PopScreen.
 
             // Sort by date is clicked
             case R.id.action_date_sort:
+
+                // Clear the previous list
                 recordsList.clear();
 
                 // Show the loading indicator
@@ -218,6 +220,10 @@ public class ViewRecordsActivity extends AppCompatActivity implements PopScreen.
 
     // Helper Methods
 
+    /***
+     * This function helps to confirm the user's login status.
+     * If the user has not signed in, it starts the login flow
+     */
     public void checkLoginStatus() {
         mAuthStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
@@ -230,10 +236,12 @@ public class ViewRecordsActivity extends AppCompatActivity implements PopScreen.
                 } else {
                     // Start login flow
                     startActivityForResult(
-                            AuthUI.getInstance()
+                            AuthUI.getInstance() // Get a reference to AuthUI
                                     .createSignInIntentBuilder()
                                     .setIsSmartLockEnabled(false)
+                                    // Set login options
                                     .setAvailableProviders(Arrays.asList(
+                                            // Set up email login
                                             new AuthUI.IdpConfig.EmailBuilder().build()))
                                     .build(),
                             RC_SIGN_IN);
@@ -244,35 +252,46 @@ public class ViewRecordsActivity extends AppCompatActivity implements PopScreen.
 
     //Start the pop up screen
     public void openPopUp() {
+        // Get an object reference of the Popscreen class
         PopScreen popScreen = new PopScreen();
+
+        // Show the pop up screen
         popScreen.show(getSupportFragmentManager(), "Test Dialog");
-
-
     }
 
-    // Get details from the pop up screen
+
+    /***
+     * This function extracts the date, month, and year values from the pop up screen
+     * @param date The date given in the pop up screen
+     * @param month The month given in the pop up screen
+     * @param year The year given in the pop up screen
+     */
     @Override
     public void applyText(String date, String month, String year) {
-        dateString = year + "/" + month + "/" + date;
-
+        dateString = year + "/" + month + "/" + date; // The year, month, and date
+        // Show a toast
         Toast.makeText(this, dateString, Toast.LENGTH_SHORT).show();
-
+        // Sort attendance entries by the datestring
         sortFirebaseEntries(dateString);
     }
 
-    // Load all attendance entries
+
+    /***
+     * This functions loads all the attendance entries
+     */
     public void loadAllFirebaseEntries() {
 
         mChildEventListener = new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
                 if (dataSnapshot.exists()) {
+                    // Deserialize the snapshot
                     Employee employee = dataSnapshot.getValue(Employee.class);
-
+                    // Add the deserialized snapshot to the records arraylist
                     recordsList.add(employee);
-
+                    // Hide the loading indicator
                     progressBarCreateAttendance.setVisibility(View.GONE);
-
+                    // Refresh the records adapter
                     viewRecordsRecyclerAdapter.notifyDataSetChanged();
                 }
             }
@@ -300,6 +319,12 @@ public class ViewRecordsActivity extends AppCompatActivity implements PopScreen.
         mDatabaseReference.addChildEventListener(mChildEventListener);
     }
 
+    /***
+     * This function accepts a filter parameter, queries the database by date, month, and year.
+     * It returns all the attendance entries that correspond to the supplied date parameter
+     * @param equalToQuery The value to be used as the search query filter
+     */
+
     public void sortFirebaseEntries(String equalToQuery) {
         progressBarCreateAttendance.setVisibility(View.VISIBLE);
         //Toast.makeText(this, dateString, Toast.LENGTH_SHORT).show();
@@ -308,26 +333,38 @@ public class ViewRecordsActivity extends AppCompatActivity implements PopScreen.
         attendanceQuery.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
                 if (dataSnapshot.exists()) {
                     Toast.makeText(ViewRecordsActivity.this, "Exists", Toast.LENGTH_SHORT).show();
+
+                    // Hide the loading indicator
                     progressBarCreateAttendance.setVisibility(View.GONE);
 
                     Toast.makeText(ViewRecordsActivity.this, "Children count is " + dataSnapshot.getChildrenCount(), Toast.LENGTH_SHORT).show();
 
+                    // Loop through the datasnapshot and get all its children
+                    // The children are datasnapshots too.
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
 
+                        // Deserialize the child datasnaphot
                         Employee employee = snapshot.getValue(Employee.class);
 
+                        // Add the deserialized snapshot to the records arraylist
                         recordsList.add(employee);
 
+                        // Hide the loading indicator
                         progressBarCreateAttendance.setVisibility(View.GONE);
 
+                        // Refresh the adapter
                         viewRecordsRecyclerAdapter.notifyDataSetChanged();
                     }
 
                 } else {
                     Toast.makeText(ViewRecordsActivity.this, "Doesn't exist", Toast.LENGTH_SHORT).show();
+
+                    // Hide the loading indicator
                     progressBarCreateAttendance.setVisibility(View.GONE);
+
                     Toast.makeText(ViewRecordsActivity.this, "No data found", Toast.LENGTH_SHORT).show();
                 }
 
